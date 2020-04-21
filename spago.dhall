@@ -17,6 +17,7 @@ You can edit this file as you like.
     , "generics-rep"
     , "formatters"
     , "simple-json-generics"
+    , "routing"
     ]
 , packages =
     ./packages.dhall

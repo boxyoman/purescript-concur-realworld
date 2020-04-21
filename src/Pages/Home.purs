@@ -14,6 +14,7 @@ import Data.Functor (mapFlipped)
 import Data.Newtype (unwrap)
 import Data.RemoteData as RD
 import Data.Variant as V
+import Page.ArticlePreview (getAndViewArticles)
 import Types (Article)
 
 
@@ -59,7 +60,7 @@ homePage = forever do
                 ]
               ]
             ]
-          , globalFeed
+          , getAndViewArticles getArticles
           ]
         , D.div
           [ P.className "col-md-3" ]
@@ -95,52 +96,3 @@ tagsView = do
 
 
 
-
-globalFeed :: forall a. Widget HTML a
-globalFeed =  do
-  remoteArticles <- getArticles <|> D.text "loading"
-  V.case_
-    # V.on RD._success (\articles ->
-        forever $ orr $ map articleView articles.articles
-      )
-    # V.on RD._error (\err ->
-        forever $ D.text (show err)
-      )
-    $ remoteArticles
-
-
-articleView :: forall a . Article -> Widget HTML a
-articleView article =
-  D.div
-    [P.className "article-preview"]
-    [ D.div
-      [P.className "article-meta" ]
-      [ D.a
-        [P.href authorProfileUrl]
-        [D.img [P.src article.author.image]]
-      , D.div
-        [ P.className "info" ]
-        [ D.a
-          [ P.href authorProfileUrl
-          , P.className "author"
-          ]
-          [ D.text $ unwrap article.author.username ]
-        , D.span [P.className "date"] [D.text (show article.createdAt)]
-        ]
-      , D.button
-        [ P.className "btn btn-outline-primary btn-sm pull-xs-right" ]
-        [ D.i [P.className "ion-heart"] []
-        , D.text (" " <> show article.favoritesCount)
-        ]
-      ]
-    , D.a
-      [ P.href ("#/article/" <> unwrap article.slug)
-      , P.className "preview-link"
-      ]
-      [ D.h1' [D.text $ unwrap article.title]
-      , D.p' [D.text article.description]
-      , D.span' [D.text "Read more..."]
-      ]
-    ]
-  where
-    authorProfileUrl = "#/profile/" <> unwrap article.author.username

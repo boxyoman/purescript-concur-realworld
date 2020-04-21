@@ -1,9 +1,11 @@
 module Types
   ( Username'
   , Username
+  , mkUsername
   , Author
   , Slug'
   , Slug
+  , mkSlug
   , Title'
   , Title
   , Article
@@ -12,11 +14,17 @@ module Types
   ) where
 
 import Data.Maybe (Maybe)
-import Data.Wrapped (Wrapped)
+import Data.Wrapped (Wrapped(..))
 import Types.DateTimeJSON (MyDateTime)
+
 
 data Username'
 type Username = Wrapped Username' String
+
+
+mkUsername :: String -> Username
+mkUsername = Wrapped
+
 
 type Author =
   { username ::  Username
@@ -27,6 +35,10 @@ type Author =
 
 data Slug'
 type Slug = Wrapped Slug' String
+
+mkSlug :: String -> Slug
+mkSlug = Wrapped
+
 
 data Title'
 type Title = Wrapped Title' String
@@ -41,6 +53,7 @@ type Article =
   , favorited :: Boolean
   , favoritesCount :: Int
   , author :: Author
+  , tagList :: Array Tag
   }
 
 
