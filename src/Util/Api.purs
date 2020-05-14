@@ -18,20 +18,26 @@ module Utils.Api
 
 import Prelude
 
+import Control.Monad.Reader (class MonadReader, asks)
 import Data.Bifunctor (bimap, lmap)
 import Data.Either (Either(..))
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
+import Data.Maybe (Maybe(..))
 import Data.RemoteData as R
 import Data.Variant (Variant)
 import Effect.Aff (attempt)
 import Effect.Aff.Class (liftAff, class MonadAff)
+import Effect.Class (liftEffect)
 import Effect.Exception as E
+import Effect.Ref (Ref)
+import Effect.Ref as Ref
 import Foreign (Foreign, MultipleErrors)
 import Milkis as M
 import Milkis.Impl.Window (windowFetch)
 import Prim.Row (class Union)
 import Simple.JSON (class ReadForeign, class WriteForeign, read, writeJSON)
+import Types (User)
 
 data ParseError
   = NotJSON String
@@ -130,62 +136,85 @@ fetch url options = do
 
 
 get
-  :: forall body m
+  :: forall body m r
    . ReponseBody body
   => MonadAff m
+  => MonadReader {user :: Ref (Maybe User) | r} m
   => M.URL
   -> m (WebRequest_ body)
-get url =
-  fetch url {method : M.getMethod, credentials : M.includeCredentials}
+get url = do
+  user <- asks (_.user) >>= (liftEffect <<< Ref.read)
+  let mToken = map _.token user
+
+  fetch
+    url
+    { method : M.getMethod
+    , credentials : M.includeCredentials
+    , headers : mkHeader mToken
+    }
+
+mkHeader :: Maybe String -> M.Headers
+mkHeader Nothing = M.makeHeaders {}
+mkHeader (Just token) = M.makeHeaders {"Authorization" : token}
 
 
 post
-  :: forall body m requestBody
+  :: forall body m requestBody r
    . ReponseBody body
   => MonadAff m
   => WriteForeign requestBody
+  => MonadReader {user :: Ref (Maybe User) | r} m
   => M.URL
   -> requestBody
   -> m (WebRequest_ body)
 post url body = do
+  user <- asks (_.user) >>= (liftEffect <<< Ref.read)
+  let mToken = map _.token user
+
   let bodyStr = writeJSON body :: String
   let options' = { method : M.postMethod
                  , body : bodyStr
-                 , headers: M.makeHeaders { "Content-Type": "application/json" }
+                 , headers: (M.makeHeaders { "Content-Type": "application/json" } <> mkHeader mToken)
                  , credentials : M.includeCredentials
                  }
   fetch url options'
 
 put
-  :: forall body m requestBody
+  :: forall body m requestBody r
    . ReponseBody body
   => MonadAff m
+  => MonadReader {user :: Ref (Maybe User) | r} m
   => WriteForeign requestBody
   => M.URL
   -> requestBody
   -> m (WebRequest_ body)
 put url body = do
+  user <- asks (_.user) >>= (liftEffect <<< Ref.read)
+  let mToken = map _.token user
   let bodyStr = writeJSON body :: String
   let options' = { method : M.putMethod
                  , body : bodyStr
-                 , headers: M.makeHeaders { "Content-Type": "application/json" }
+                 , headers: (M.makeHeaders { "Content-Type": "application/json" } <> mkHeader mToken)
                  , credentials : M.includeCredentials
                  }
   fetch url options'
 
 delete
-  :: forall body m requestBody
+  :: forall body m requestBody r
    . ReponseBody body
   => MonadAff m
+  => MonadReader {user :: Ref (Maybe User) | r} m
   => WriteForeign requestBody
   => M.URL
   -> requestBody
   -> m (WebRequest_ body)
 delete url body = do
+  user <- asks (_.user) >>= (liftEffect <<< Ref.read)
+  let mToken = map _.token user
   let bodyStr = writeJSON body :: String
   let options' = { method : M.deleteMethod
                  , body : bodyStr
-                 , headers: M.makeHeaders { "Content-Type": "application/json" }
+                 , headers: (M.makeHeaders { "Content-Type": "application/json" } <> mkHeader mToken)
                  , credentials : M.includeCredentials
                  }
   fetch url options'

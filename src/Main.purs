@@ -2,34 +2,29 @@ module Main where
 
 import Prelude
 
-import Api (getArticles)
-import Concur.Core (Widget)
-import Concur.React (HTML)
-import Concur.React.DOM as D
-import Concur.React.Props as P
 import Concur.React.Run (runWidgetInDom)
 import Control.Alt ((<|>))
-import Control.Monad.Rec.Class (forever)
-import Control.MultiAlternative (orr)
+import Control.Monad.Reader.Trans (runReaderT)
 import Data.Either (either)
 import Data.Foldable (oneOf)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
-import Data.Newtype (unwrap)
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.AVar as Evar
 import Effect.Aff (Milliseconds(..), delay)
 import Effect.Aff.AVar as Avar
 import Effect.Aff.Class (liftAff)
 import Effect.Class (liftEffect)
-import Effect.Class.Console (log)
-import Page.Artivle (articlePage)
+import Effect.Ref (Ref)
+import Effect.Ref as Ref
+import Page.Article (articlePage)
 import Page.Home (homePage)
 import Page.Profile (profilePage)
 import Routing (match)
 import Routing.Hash (getHash, matches)
-import Routing.Match (Match, end, int, root, lit, str)
-import Types (Slug, Username, mkSlug, mkUsername)
+import Routing.Match (Match, end, root, lit, str)
+import Types (MyApp, Slug, Username, User, mkSlug, mkUsername)
 
 
 data Routes
@@ -50,7 +45,7 @@ routes = root *> oneOf
   ]
 
 
-routingWidget :: forall a. Widget HTML a
+routingWidget :: forall a r. MyApp { user :: Ref (Maybe User) |r } a
 routingWidget = do
   routeRef <- liftEffect $ do
     var <- Evar.empty
@@ -70,7 +65,7 @@ routingWidget = do
     go awaitRoute route'
 
 
-pageForRoute :: forall a . Routes -> Widget HTML a
+pageForRoute :: forall a r . Routes -> MyApp { user :: Ref (Maybe User) | r} a
 pageForRoute HomePage = homePage
 pageForRoute (Profile username) = profilePage username
 pageForRoute (Article slug) = articlePage slug
@@ -78,4 +73,5 @@ pageForRoute (Article slug) = articlePage slug
 
 main :: Effect Unit
 main = do
-  runWidgetInDom "root" routingWidget
+  user <- Ref.new Nothing
+  runWidgetInDom "root" (runReaderT routingWidget {user})

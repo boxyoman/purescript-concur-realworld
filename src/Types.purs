@@ -2,6 +2,7 @@ module Types
   ( Username'
   , Username
   , mkUsername
+  , User
   , Author
   , Slug'
   , Slug
@@ -11,8 +12,12 @@ module Types
   , Article
   , Tag'
   , Tag
+  , MyApp
   ) where
 
+import Concur.Core (Widget)
+import Concur.React (HTML)
+import Control.Monad.Reader.Trans (ReaderT)
 import Data.Maybe (Maybe)
 import Data.Wrapped (Wrapped(..))
 import Types.DateTimeJSON (MyDateTime)
@@ -25,6 +30,13 @@ type Username = Wrapped Username' String
 mkUsername :: String -> Username
 mkUsername = Wrapped
 
+type User =
+  { username :: Username
+  , email :: String
+  , token :: String
+  , bio :: String
+  , image :: Maybe String
+  }
 
 type Author =
   { username ::  Username
@@ -59,3 +71,6 @@ type Article =
 
 data Tag'
 type Tag = Wrapped Tag' String
+
+
+type MyApp r = ReaderT r (Widget HTML)

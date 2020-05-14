@@ -1,4 +1,4 @@
-module Page.Artivle where
+module Page.Article where
 
 import Prelude
 
@@ -15,11 +15,12 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
 import Data.RemoteData as RD
 import Data.Variant as V
+import Effect.Ref (Ref)
 import Page.ArticlePreview (getAndViewArticles)
-import Types (Author, Slug, Username, Article)
+import Types (Article, Author, MyApp, Slug, Username, User)
 
 
-articlePage :: forall a . Slug -> Widget HTML a
+articlePage :: forall a r . Slug -> MyApp { user :: Ref (Maybe User) | r} a
 articlePage slug = do
   rdArticle <- getArticle slug <|> D.text "loading"
   V.case_
@@ -32,7 +33,7 @@ articlePage slug = do
     $ rdArticle
 
 
-articleView :: forall a . Article -> Widget HTML a
+articleView :: forall a r . Article -> MyApp { user :: Ref (Maybe User) | r} a
 articleView article =
   D.div
     [ P.className "article-page" ]
@@ -68,7 +69,7 @@ articleView article =
     authorProfileUrl = "#/profile/" <> unwrap article.author.username
 
 
-articleMetaView :: forall a . Article  -> Widget HTML a
+articleMetaView :: forall a r . Article  -> MyApp { user :: Ref (Maybe User) | r} a
 articleMetaView article =
   D.div
     [ P.className "article-meta" ]

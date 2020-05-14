@@ -2,29 +2,27 @@ module Page.ArticlePreview where
 
 import Prelude
 
-import Concur.Core (Widget)
-import Concur.React (HTML)
 import Concur.React.DOM as D
 import Concur.React.Props as P
 import Control.Alt ((<|>))
 import Control.Monad.Rec.Class (forever)
 import Control.MultiAlternative (orr)
 import Data.Functor (mapFlipped)
+import Data.Maybe (Maybe)
 import Data.Newtype (unwrap)
 import Data.RemoteData as RD
 import Data.Variant as V
-import Effect.Aff (Aff)
-import Effect.Aff.Class (liftAff)
-import Types (Article)
+import Effect.Ref (Ref)
+import Types (Article, MyApp, User)
 import Utils.Api (WebRequest_)
 
 
 getAndViewArticles
-  :: forall a
-   . Aff (WebRequest_ { articles :: Array Article })
-  -> Widget HTML a
+  :: forall a r
+   . MyApp { user :: Ref (Maybe User) | r} (WebRequest_ { articles :: Array Article })
+  -> MyApp { user :: Ref (Maybe User) | r} a
 getAndViewArticles getArticles =  do
-  rdArticles <- (liftAff getArticles) <|> D.text "loading"
+  rdArticles <- getArticles <|> D.text "loading"
   V.case_
     # V.on RD._success (\articles ->
         forever $ orr $ map articleView articles.articles
@@ -35,7 +33,7 @@ getAndViewArticles getArticles =  do
     $ rdArticles
 
 
-articleView :: forall a . Article -> Widget HTML a
+articleView :: forall a r . Article -> MyApp { user :: Ref (Maybe User) | r} a
 articleView article =
   D.div
     [P.className "article-preview"]
