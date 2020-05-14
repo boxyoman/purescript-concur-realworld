@@ -21,7 +21,7 @@ import Data.Variant as V
 import Effect.Class (liftEffect)
 import Effect.Ref (Ref)
 import Effect.Ref as Ref
-import Page.ArticlePreview (getAndViewArticles)
+import Widgets.ArticlePreview (getAndViewArticles)
 import Types (MyApp, User)
 
 

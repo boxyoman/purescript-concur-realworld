@@ -1,4 +1,4 @@
-module Page.ArticlePreview where
+module Widgets.ArticlePreview where
 
 import Prelude
 

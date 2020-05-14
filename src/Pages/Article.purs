@@ -3,21 +3,17 @@ module Page.Article where
 import Prelude
 
 import Api (getArticle)
-import Concur.Core (Widget)
-import Concur.React (HTML)
 import Concur.React.DOM as D
 import Concur.React.Props as P
 import Control.Alt ((<|>))
 import Control.Alternative (empty)
 import Control.Monad.Rec.Class (forever)
-import Control.MultiAlternative (orr)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe)
 import Data.Newtype (unwrap)
 import Data.RemoteData as RD
 import Data.Variant as V
 import Effect.Ref (Ref)
-import Page.ArticlePreview (getAndViewArticles)
-import Types (Article, Author, MyApp, Slug, Username, User)
+import Types (Article, MyApp, Slug, User)
 
 
 articlePage :: forall a r . Slug -> MyApp { user :: Ref (Maybe User) | r} a

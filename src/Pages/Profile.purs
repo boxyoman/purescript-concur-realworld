@@ -17,7 +17,7 @@ import Data.Newtype (unwrap)
 import Data.RemoteData as RD
 import Data.Variant as V
 import Effect.Ref (Ref)
-import Page.ArticlePreview (getAndViewArticles)
+import Widgets.ArticlePreview (getAndViewArticles)
 import Types (Author, MyApp, Username, User)
 
 data PageArticle = Faved | WrittenBy
