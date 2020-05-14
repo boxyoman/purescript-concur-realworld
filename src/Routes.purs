@@ -28,6 +28,14 @@ isHomePage :: Routes -> Boolean
 isHomePage HomePage = true
 isHomePage _ = false
 
+isSignUp :: Routes -> Boolean
+isSignUp _ = false
+
+isSettings :: Routes -> Boolean
+isSettings _ = false
+
+isNewPost :: Routes -> Boolean
+isNewPost _ = false
 
 routes :: Match Routes
 routes = root *> oneOf

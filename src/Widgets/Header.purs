@@ -60,7 +60,7 @@ signupButton page = do
       D.li
         [ P.className "nav-item" ]
         [ D.a
-          [ P.className "nav-link active"
+          [ P.className ("nav-link" <> activeRoute page Routes.isSignUp)
           , P.href "#/signup"
           ]
           [ D.text "Sign up"
@@ -79,7 +79,7 @@ settingsButton page = do
       D.li
         [ P.className "nav-item" ]
         [ D.a
-          [ P.className "nav-link active"
+          [ P.className ("nav-link" <> activeRoute page Routes.isSettings)
           , P.href "#/settings"
           ]
           [ D.i
@@ -102,7 +102,7 @@ newPostButton page = do
       D.li
         [ P.className "nav-item" ]
         [ D.a
-          [ P.className "nav-link active"
+          [ P.className ("nav-link" <> activeRoute page Routes.isNewPost)
           , P.href "#/newpost"
           ]
           [ D.i
