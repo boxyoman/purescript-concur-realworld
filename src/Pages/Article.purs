@@ -7,29 +7,32 @@ import Concur.React.DOM as D
 import Concur.React.Props as P
 import Control.Alt ((<|>))
 import Control.Alternative (empty)
-import Control.Monad.Rec.Class (forever)
 import Data.Maybe (Maybe)
 import Data.Newtype (unwrap)
-import Data.RemoteData as RD
+import Data.Variant (Variant)
 import Data.Variant as V
 import Effect.Ref (Ref)
 import Types (Article, MyApp, Slug, User)
+import Routes as R
 
 
-articlePage :: forall a r . Slug -> MyApp { user :: Ref (Maybe User) | r} a
+articlePage
+  :: forall v r
+   . Slug
+  -> MyApp { user :: Ref (Maybe User) | r} (Variant (changeRoute :: R.Routes | v))
 articlePage slug = do
   rdArticle <- getArticle slug <|> D.text "loading"
-  V.case_
-    # V.on RD._success (\article ->
-        articleView article.article
-      )
-    # V.on RD._error (\err ->
-        forever $ D.text (show err)
-      )
-    $ rdArticle
+  V.match
+    { success : \article -> articleView article.article
+    , error : \err -> D.text (show err)
+    }
+    rdArticle
 
 
-articleView :: forall a r . Article -> MyApp { user :: Ref (Maybe User) | r} a
+articleView
+  :: forall v r
+   . Article
+  -> MyApp { user :: Ref (Maybe User) | r} (Variant (changeRoute :: R.Routes | v))
 articleView article =
   D.div
     [ P.className "article-page" ]
@@ -61,23 +64,24 @@ articleView article =
         ]
       ]
     ]
-  where
-    authorProfileUrl = "#/profile/" <> unwrap article.author.username
 
 
-articleMetaView :: forall a r . Article  -> MyApp { user :: Ref (Maybe User) | r} a
+articleMetaView
+  :: forall v r
+   . Article
+  -> MyApp { user :: Ref (Maybe User) | r} (Variant (changeRoute :: R.Routes | v))
 articleMetaView article =
   D.div
     [ P.className "article-meta" ]
     [ D.a
-      [ P.href $ "#/profile/" <> authorProfileUrl ]
+      [P.onClick $> R.changeRoute (R.Profile article.author.username)]
       [ D.img
         [ P.src article.author.image ]
       ]
     , D.div
       [ P.className "info" ]
       [ D.a
-        [ P.href $ "#/profile/" <> authorProfileUrl ]
+        [P.onClick $> R.changeRoute (R.Profile article.author.username)]
         [ D.text $ unwrap article.author.username ]
       , D.span
         [ P.className "date" ]
@@ -85,5 +89,3 @@ articleMetaView article =
       ]
     , empty -- TODO: follow and like here
     ]
-  where
-    authorProfileUrl = "#/profile/" <> unwrap article.author.username

@@ -7,18 +7,19 @@ import Concur.React.Props as P
 import Control.Alternative (empty)
 import Control.Monad.Reader.Class (asks)
 import Data.Maybe (Maybe, isJust)
+import Data.Variant (Variant)
 import Effect.Class (liftEffect)
 import Effect.Ref (Ref)
 import Effect.Ref as Ref
 import Routes (Routes)
-import Routes as Routes
+import Routes as R
 import Types (MyApp, User)
 
 
 header
-  :: forall a  r
+  :: forall v r
    . Routes
-  -> MyApp { user :: Ref (Maybe User) | r} a
+  -> MyApp { user :: Ref (Maybe User) | r} (Variant (changeRoute :: Routes | v))
 header page = do
   muser <- asks (_.user) >>= (liftEffect <<< Ref.read)
   D.nav
@@ -27,7 +28,7 @@ header page = do
       [ P.className "container" ]
       [ D.a
         [ P.className "navbar-brand"
-        , P.href "#/"
+        , P.onClick $> (R.changeRoute R.HomePage)
         ]
         [ D.text "conduit" ]
       , D.ul
@@ -35,8 +36,8 @@ header page = do
         [ D.li
           [ P.className "nav-item" ]
           [ D.a
-            [ P.className ("nav-link" <> activeRoute page Routes.isHomePage)
-            , P.href "#/"
+            [ P.className ("nav-link" <> activeRoute page R.isHomePage)
+            , P.onClick $> (R.changeRoute R.HomePage)
             ]
             [ D.text "Home" ]
           ]
@@ -61,7 +62,7 @@ signupButton page = do
       D.li
         [ P.className "nav-item" ]
         [ D.a
-          [ P.className ("nav-link" <> activeRoute page Routes.isSignUp)
+          [ P.className ("nav-link" <> activeRoute page R.isSignUp)
           , P.href "#/signup"
           ]
           [ D.text "Sign up"
@@ -69,9 +70,9 @@ signupButton page = do
         ]
 
 signinButton
-  :: forall a  r
+  :: forall v r
    . Routes
-  -> MyApp { user :: Ref (Maybe User) | r} a
+  -> MyApp { user :: Ref (Maybe User) | r} (Variant (changeRoute :: Routes | v))
 signinButton page = do
   muser <- asks (_.user) >>= (liftEffect <<< Ref.read)
   if isJust muser
@@ -80,8 +81,8 @@ signinButton page = do
       D.li
         [ P.className "nav-item" ]
         [ D.a
-          [ P.className ("nav-link" <> activeRoute page Routes.isLogIn)
-          , P.href "#/login"
+          [ P.className ("nav-link" <> activeRoute page R.isLogIn)
+          , P.onClick $> (R.changeRoute R.LogIn)
           ]
           [ D.text "Sign in"
           ]
@@ -100,7 +101,7 @@ settingsButton page = do
       D.li
         [ P.className "nav-item" ]
         [ D.a
-          [ P.className ("nav-link" <> activeRoute page Routes.isSettings)
+          [ P.className ("nav-link" <> activeRoute page R.isSettings)
           , P.href "#/settings"
           ]
           [ D.i
@@ -123,7 +124,7 @@ newPostButton page = do
       D.li
         [ P.className "nav-item" ]
         [ D.a
-          [ P.className ("nav-link" <> activeRoute page Routes.isNewPost)
+          [ P.className ("nav-link" <> activeRoute page R.isNewPost)
           , P.href "#/newpost"
           ]
           [ D.i
@@ -143,8 +144,8 @@ activeRoute route pred =
 
 
 footer
-  :: forall a  r
-   . MyApp { user :: Ref (Maybe User) | r} a
+  :: forall v  r
+   . MyApp { user :: Ref (Maybe User) | r} (Variant (changeRoute :: Routes | v))
 footer =
   D.footer
     []
@@ -152,7 +153,7 @@ footer =
       [ P.className "container" ]
       [ D.a
         [ P.className "logo-font"
-        , P.href "#/"
+        , P.onClick $> (R.changeRoute R.HomePage)
         ]
         [ D.text "conduit"
         ]

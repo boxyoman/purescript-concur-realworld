@@ -2,22 +2,17 @@ module Page.LogIn where
 
 import Prelude
 
-import Api (getArticle)
 import Concur.Core.Patterns (loopState)
 import Concur.React.DOM as D
 import Concur.React.Props as P
-import Control.Alt ((<|>))
-import Control.Alternative (empty)
-import Control.Monad.Rec.Class (forever)
 import Data.Either (Either(..))
-import Data.Maybe (Maybe, fromMaybe, maybe)
-import Data.Newtype (unwrap)
+import Data.Maybe (Maybe, maybe)
 import Data.RemoteData as RD
 import Data.Variant as V
 import Effect.Class (liftEffect)
 import Effect.Ref (Ref)
 import React.Ref as RRef
-import Types (Article, MyApp, Slug, User)
+import Types (MyApp, User)
 import Unsafe.Coerce (unsafeCoerce)
 import Widgets.InputError (showErrors)
 import Auth as Auth

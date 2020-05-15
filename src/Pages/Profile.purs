@@ -7,7 +7,6 @@ import Concur.React.DOM as D
 import Concur.React.Props as P
 import Control.Alt ((<|>))
 import Control.Alternative (empty)
-import Control.Monad.Rec.Class (forever)
 import Control.MultiAlternative (orr)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Eq (genericEq)
@@ -15,10 +14,14 @@ import Data.Generic.Rep.Show (genericShow)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (unwrap)
 import Data.RemoteData as RD
+import Data.Symbol (SProxy(..))
+import Data.Variant (Variant)
 import Data.Variant as V
 import Effect.Ref (Ref)
-import Widgets.ArticlePreview (getAndViewArticles)
+import Routes as R
 import Types (Author, MyApp, Username, User)
+import Widgets.ArticlePreview (getAndViewArticles)
+
 
 data PageArticle = Faved | WrittenBy
 
@@ -29,7 +32,10 @@ instance showPageArticle :: Show PageArticle where
   show = genericShow
 
 
-profilePage :: forall a r . Username -> MyApp { user :: Ref (Maybe User) |r } a
+profilePage
+  :: forall v r
+   . Username
+  -> MyApp { user :: Ref (Maybe User) |r } (Variant (changeRoute :: R.Routes | v))
 profilePage username =
   D.div
     [ P.className "profile-page" ]
@@ -49,11 +55,19 @@ profilePage username =
     ]
 
 
+_pageArticle = (SProxy :: SProxy "pageArticle")
+
+changePageArticle
+  :: forall v. PageArticle -> (Variant (pageArticle :: PageArticle | v))
+changePageArticle =
+  V.inj _pageArticle
+
+
 profileArticles
-  :: forall a r
+  :: forall v r
    . Username
   -> PageArticle
-  -> MyApp { user :: Ref (Maybe User) |r} a
+  -> MyApp { user :: Ref (Maybe User) |r} (Variant (changeRoute :: R.Routes | v))
 profileArticles username pageArticle = do
   pageArticle' <- orr $
     [ D.div
@@ -64,7 +78,7 @@ profileArticles username pageArticle = do
           [ P.className "nav-item" ]
           [ D.a
             [ P.className ("nav-link" <> activeCss pageArticle WrittenBy)
-            , P.onClick $> WrittenBy
+            , P.onClick $> changePageArticle WrittenBy
             ]
             [D.text "My Articles"]
           ]
@@ -72,7 +86,7 @@ profileArticles username pageArticle = do
           [ P.className "nav-item" ]
           [ D.a
             [ P.className ("nav-link" <> activeCss pageArticle Faved)
-            , P.onClick $> Faved
+            , P.onClick $> changePageArticle Faved
             ]
             [D.text "Favorited Articles"]
           ]
@@ -82,7 +96,7 @@ profileArticles username pageArticle = do
         WrittenBy -> getAndViewArticles (getArticlesBy username)
         Faved -> getAndViewArticles (getArticlesFavBy username)
     ]
-  profileArticles username pageArticle'
+  V.on _pageArticle (profileArticles username) pure pageArticle'
 
   where
     activeCss :: forall eq . Eq eq => eq -> eq -> String
@@ -99,7 +113,7 @@ profileInfo username = do
         profileInfoView profile.profile
       )
     # V.on RD._error (\err ->
-        forever $ D.text (show err)
+        D.text (show err)
       )
     $ rdProfile
 

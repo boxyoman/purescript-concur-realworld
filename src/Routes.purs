@@ -1,17 +1,16 @@
 module Routes where
 
 import Prelude
+
 import Data.Foldable (oneOf)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
-import Data.Maybe (Maybe)
-import Effect.Ref (Ref)
-import Page.Article (articlePage)
-import Page.Home (homePage)
-import Page.LogIn (logIn)
-import Page.Profile (profilePage)
+import Data.Newtype (unwrap)
+import Data.Symbol (SProxy(..))
+import Data.Variant (Variant)
+import Data.Variant as V
 import Routing.Match (Match, end, root, lit, str)
-import Types (MyApp, Slug, Username, User, mkSlug, mkUsername)
+import Types (Slug, Username, mkSlug, mkUsername)
 
 
 
@@ -53,11 +52,14 @@ routes = root *> oneOf
   ]
 
 
+toPath :: Routes -> String
+toPath HomePage = "/"
+toPath (Profile username) = "/profile/" <> unwrap username
+toPath (Article slug) = "/article/" <> unwrap slug
+toPath LogIn = "/login/"
 
-pageForRoute :: forall a r . Routes -> MyApp { user :: Ref (Maybe User) | r} a
-pageForRoute HomePage = homePage
-pageForRoute (Profile username) = profilePage username
-pageForRoute (Article slug) = articlePage slug
-pageForRoute LogIn = do
-  logIn
-  homePage
+
+changeRoute :: forall v . Routes -> Variant (changeRoute :: Routes | v)
+changeRoute r = V.inj (SProxy :: SProxy "changeRoute") r
+
+

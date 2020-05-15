@@ -8,7 +8,6 @@ import Concur.React.Props as P
 import Control.Alt ((<|>))
 import Control.Alternative (empty)
 import Control.Monad.Reader (asks)
-import Control.Monad.Rec.Class (forever)
 import Control.MultiAlternative (orr)
 import Data.Functor (mapFlipped)
 import Data.Generic.Rep (class Generic)
@@ -16,17 +15,21 @@ import Data.Generic.Rep.Eq (genericEq)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Maybe (Maybe, isJust)
 import Data.Newtype (unwrap)
-import Data.RemoteData as RD
+import Data.Symbol (SProxy(..))
+import Data.Variant (Variant)
 import Data.Variant as V
 import Effect.Class (liftEffect)
 import Effect.Ref (Ref)
 import Effect.Ref as Ref
+import Routes (Routes)
 import Types (MyApp, User)
 import Widgets.ArticlePreview (getAndViewArticles)
 
 
-homePage :: forall a r. MyApp { user :: Ref (Maybe User) |r } a
-homePage = forever do
+homePage
+  :: forall r v
+   . MyApp { user :: Ref (Maybe User) |r } (Variant (changeRoute :: Routes | v))
+homePage = do
   D.div
     [ P.className "home-page" ]
     [ D.div
@@ -43,7 +46,19 @@ homePage = forever do
       [ P.className "container page" ]
       [ D.div
         [ P.className "row" ]
-        [ articlesView Global ]
+        [ D.div
+          [ P.className "col-md-9" ]
+          [ articlesView Global
+          ]
+        , D.div
+          [ P.className "col-md-3" ]
+          [ D.div
+            [ P.className "sidebar" ]
+            [ D.p' [D.text "Popular Tags" ]
+            , tagsView
+            ]
+          ]
+        ]
       ]
     ]
 
@@ -57,50 +72,50 @@ instance showArticleSettings :: Show ArticleSettings where
   show = genericShow
 
 
-articlesView :: forall a r . ArticleSettings -> MyApp { user :: Ref (Maybe User) | r } a
+_pageFeed = (SProxy :: SProxy "pageFeed")
+
+changePageFeed
+  :: forall v. ArticleSettings -> (Variant (pageFeed :: ArticleSettings | v))
+changePageFeed =
+  V.inj _pageFeed
+
+
+articlesView
+  :: forall v r
+   . ArticleSettings
+  -> MyApp { user :: Ref (Maybe User) | r } (Variant (changeRoute :: Routes | v))
 articlesView artSettings = do
   user <- asks (_.user) >>= (liftEffect <<< Ref.read)
   artSettings' <- orr $
-      [ D.div
-        [ P.className "col-md-9" ]
-        [ D.div
-          [ P.className "feed-toggle" ]
-          [ D.ul
-            [ P.className "nav nav-pills outline-active" ]
-            [ if isJust user
-                then D.li
-                      [ P.className "nav-item" ]
-                      [ D.a
-                        [ P.className ("nav-link " <> activeCss artSettings YourFeed)
-                        , P.onClick $> YourFeed
-                        ]
-                        [D.text "Your Feed"]
-                      ]
-                else empty
-            , D.li
-              [ P.className "nav-item" ]
-              [ D.a
-                [ P.className ("nav-link " <> activeCss artSettings Global)
-                , P.onClick $> Global
-                ]
-                [D.text "Global Feed"]
-              ]
+    [ D.div
+      [ P.className "feed-toggle" ]
+      [ D.ul
+        [ P.className "nav nav-pills outline-active" ]
+        [ if isJust user
+            then D.li
+                  [ P.className "nav-item" ]
+                  [ D.a
+                    [ P.className ("nav-link " <> activeCss artSettings YourFeed)
+                    , P.onClick $> changePageFeed YourFeed
+                    ]
+                    [D.text "Your Feed"]
+                  ]
+            else empty
+        , D.li
+          [ P.className "nav-item" ]
+          [ D.a
+            [ P.className ("nav-link " <> activeCss artSettings Global)
+            , P.onClick $> changePageFeed Global
             ]
-          ]
-        , case artSettings of
-            Global -> getAndViewArticles getArticles
-            YourFeed -> getAndViewArticles getFeed
-        ]
-      , D.div
-        [ P.className "col-md-3" ]
-        [ D.div
-          [ P.className "sidebar" ]
-          [ D.p' [D.text "Popular Tags" ]
-          , tagsView
+            [D.text "Global Feed"]
           ]
         ]
       ]
-  articlesView artSettings'
+    , case artSettings of
+        Global -> getAndViewArticles getArticles
+        YourFeed -> getAndViewArticles getFeed
+    ]
+  V.on _pageFeed (articlesView) pure artSettings'
 
   where
     activeCss :: forall eq . Eq eq => eq -> eq -> String
@@ -113,22 +128,16 @@ articlesView artSettings = do
 tagsView :: forall a r. MyApp { user :: Ref (Maybe User) |r } a
 tagsView = do
   rdTags <- getTags <|> D.text "loading"
-  V.case_
-    # V.on RD._success (\tags ->
-        forever $ orr $ mapFlipped tags.tags $ \tag ->
+  V.match
+    { success : \tags ->
+        orr $ mapFlipped tags.tags $ \tag ->
           D.a
             [ P.href ""
             , P.className "tag-pill tag-default"
             ]
             [ D.text (unwrap tag)
             ]
-      )
-    # V.on RD._error (\err ->
-        forever $ D.text (show err)
-      )
-    $ rdTags
-
-
-
-add :: Int -> Int -> Int
-add x y = x + y
+    , error : \err ->
+        D.text (show err)
+    }
+    rdTags
