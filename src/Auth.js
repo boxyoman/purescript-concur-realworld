@@ -6,6 +6,9 @@ exports.setItem_ = function (key, value) {
 };
 
 exports.getItem_ = function (key) {
-  var result = window.localStorage.getItem(key);
-  return result;
+  return window.localStorage.getItem(key);
+};
+
+exports.removeItem_ = function (key) {
+  window.localStorage.removeItem(key);
 };

@@ -15,7 +15,7 @@ variant'
    . Cons label a r r1
   => IsSymbol label
   => SProxy label
-  -> Prism' (Variant ( | r1)) a
+  -> Prism' (Variant r1) a
 variant' fieldProxy =
   prism'
     (inj fieldProxy)
@@ -33,7 +33,7 @@ variant' fieldProxy =
 -- | For example:
 -- |
 -- | ```purescript
--- | label (SProxy :: SProxy "foo")
+-- | variant (SProxy :: SProxy "foo")
 -- |   :: forall a b r. Prism (Variant ( foo :: a | r )) (Variant ( foo :: b | r )) a b
 -- | ```label'
 variant
@@ -42,11 +42,9 @@ variant
   => Cons label b r r2
   => IsSymbol label
   => SProxy label
-  -> Prism (Variant ( | r1)) (Variant ( | r2)) a b
+  -> Prism (Variant r1) (Variant r2) a b
 variant fieldProxy =
   prism
     (inj fieldProxy)
-    (\ v ->
-      ((on fieldProxy (\a -> Right a)))
-        -- Used to use expand here, but it added an unneeded contraint
-        (\ v2 -> Left (unsafeCoerce v2)) v)
+    (on fieldProxy Right (Left <<< unsafeCoerce))
+

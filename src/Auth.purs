@@ -25,17 +25,17 @@ login
   -> m (WebRequest_ User)
 login loginData = do
   rdUser <- Api.login loginData
-  V.case_
-    # V.on RD._success (\{user : user} -> do
+  V.match
+    { success : \ {user} -> do
         userRef <- asks _.user
         liftEffect $ Ref.write (Just user) userRef
         setItem "token" user.token
         pure $ RD.success user
-      )
-    # V.on RD._error (\err ->
+
+    , error : \ err -> do
         pure $ RD.error err
-      )
-    $ rdUser
+    }
+    rdUser
 
 
 setupUserRef
@@ -49,14 +49,24 @@ setupUserRef = do
       liftEffect $ Ref.new Nothing
     Just token -> do
       rdUser <- Api.getUser token
-      V.case_
-        # V.on RD._success (\{user : user} -> do
+      V.match
+        { success : \{user} ->
             liftEffect $ Ref.new (Just user)
-          )
-        # V.on RD._error (\err ->
+        , error : \err ->
             liftEffect $ Ref.new Nothing
-          )
-        $ rdUser
+        }
+        rdUser
+
+
+logout
+  :: forall m r
+   . MonadAff m
+  => MonadReader {user :: Ref (Maybe User) | r} m
+  => m Unit
+logout = do
+  userRef <- asks _.user
+  liftEffect $ Ref.write Nothing userRef
+  removeItem "token"
 
 
 foreign import getItem_ :: EffectFn1 String (Nullable String)
@@ -71,3 +81,9 @@ foreign import setItem_ :: EffectFn2 String String Unit
 setItem :: forall m. (MonadAff m) => String -> String -> m Unit
 setItem key value =
   liftEffect (runEffectFn2 setItem_ key value)
+
+foreign import removeItem_ :: EffectFn1 String Unit
+
+removeItem :: forall m. (MonadAff m) => String -> m Unit
+removeItem key =
+  liftEffect (runEffectFn1 removeItem_ key)
