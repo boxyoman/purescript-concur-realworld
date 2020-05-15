@@ -11,7 +11,7 @@ import Effect.Ref (Ref)
 import Effect.Ref as Ref
 import Milkis as M
 import Types (Article, Author, Slug, Tag, Username, User)
-import Utils.Api (WebRequest_, get, readAsJSON')
+import Utils.Api (WebRequest_, get, post, readAsJSON')
 
 rootUrl :: String
 rootUrl = "https://conduit.productionready.io/api"
@@ -24,6 +24,15 @@ getArticles
   => m (WebRequest_ ({articles :: Array Article}))
 getArticles = do
   readAsJSON' <$> get (M.URL (rootUrl <> "/articles"))
+
+
+getFeed
+  :: forall m r
+   . MonadAff m
+  => MonadReader {user :: Ref (Maybe User) | r} m
+  => m (WebRequest_ ({articles :: Array Article}))
+getFeed = do
+  readAsJSON' <$> get (M.URL (rootUrl <> "/articles/feed"))
 
 
 getArticle
@@ -76,3 +85,13 @@ getArticlesFavBy
   -> m (WebRequest_ ({articles :: Array Article}))
 getArticlesFavBy username = do
   readAsJSON' <$> get (M.URL (rootUrl <> "/articles?favorited=" <> unwrap username))
+
+
+login
+  :: forall m r
+   . MonadAff m
+  => MonadReader {user :: Ref (Maybe User) | r} m
+  => { email :: String, password :: String }
+  -> m (WebRequest_ ({user :: User}))
+login loginData = do
+  readAsJSON' <$> post (M.URL (rootUrl <> "/users/login")) {user: loginData}

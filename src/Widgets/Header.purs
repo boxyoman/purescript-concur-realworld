@@ -42,6 +42,7 @@ header page = do
           ]
         , newPostButton page
         , settingsButton page
+        , signinButton page
         , signupButton page
         ]
       ]
@@ -66,6 +67,26 @@ signupButton page = do
           [ D.text "Sign up"
           ]
         ]
+
+signinButton
+  :: forall a  r
+   . Routes
+  -> MyApp { user :: Ref (Maybe User) | r} a
+signinButton page = do
+  muser <- asks (_.user) >>= (liftEffect <<< Ref.read)
+  if isJust muser
+    then empty
+    else
+      D.li
+        [ P.className "nav-item" ]
+        [ D.a
+          [ P.className ("nav-link" <> activeRoute page Routes.isLogIn)
+          , P.href "#/login"
+          ]
+          [ D.text "Sign in"
+          ]
+        ]
+
 
 
 settingsButton

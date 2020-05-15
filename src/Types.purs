@@ -34,7 +34,7 @@ type User =
   { username :: Username
   , email :: String
   , token :: String
-  , bio :: String
+  , bio :: Maybe String
   , image :: Maybe String
   }
 

@@ -2,7 +2,7 @@ module Page.Home where
 
 import Prelude
 
-import Api (getArticles, getTags)
+import Api (getArticles, getFeed, getTags)
 import Concur.React.DOM as D
 import Concur.React.Props as P
 import Control.Alt ((<|>))
@@ -21,8 +21,8 @@ import Data.Variant as V
 import Effect.Class (liftEffect)
 import Effect.Ref (Ref)
 import Effect.Ref as Ref
-import Widgets.ArticlePreview (getAndViewArticles)
 import Types (MyApp, User)
+import Widgets.ArticlePreview (getAndViewArticles)
 
 
 homePage :: forall a r. MyApp { user :: Ref (Maybe User) |r } a
@@ -87,7 +87,9 @@ articlesView artSettings = do
               ]
             ]
           ]
-        , getAndViewArticles getArticles
+        , case artSettings of
+            Global -> getAndViewArticles getArticles
+            YourFeed -> getAndViewArticles getFeed
         ]
       , D.div
         [ P.className "col-md-3" ]

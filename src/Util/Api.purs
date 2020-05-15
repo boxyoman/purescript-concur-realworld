@@ -155,7 +155,7 @@ get url = do
 
 mkHeader :: Maybe String -> M.Headers
 mkHeader Nothing = M.makeHeaders {}
-mkHeader (Just token) = M.makeHeaders {"Authorization" : token}
+mkHeader (Just token) = M.makeHeaders {"Authorization" : "Token " <> token}
 
 
 post
