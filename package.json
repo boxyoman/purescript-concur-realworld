@@ -10,10 +10,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "parcel-bundler": "^1.12.3"
+    "parcel-bundler": "^1.12.3",
+    "concurrently": "^5.1.0"
   },
   "dependencies": {
-    "concurrently": "^5.1.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6"
   }
