@@ -11,7 +11,7 @@ import Effect.Ref (Ref)
 import Effect.Ref as Ref
 import Milkis as M
 import Types (Article, Author, Slug, Tag, Username, User)
-import Utils.Api (WebRequest_, get, post, readAsJSON')
+import Utils.Api (WebRequest_, fetch, get, post, readAsJSON')
 
 rootUrl :: String
 rootUrl = "https://conduit.productionready.io/api"
@@ -95,3 +95,17 @@ login
   -> m (WebRequest_ ({user :: User}))
 login loginData = do
   readAsJSON' <$> post (M.URL (rootUrl <> "/users/login")) {user: loginData}
+
+
+getUser
+  :: forall m
+   . MonadAff m
+  => String
+  -> m (WebRequest_ ({user :: User}))
+getUser token = do
+  let options' = { method : M.getMethod
+                 , headers: M.makeHeaders {"Content-Type": "application/json"}
+                            <> M.makeHeaders {"Authorization" : "Token " <> token}
+                 , credentials : M.includeCredentials
+                 }
+  readAsJSON' <$> fetch (M.URL (rootUrl <> "/user")) options'
