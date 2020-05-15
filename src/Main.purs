@@ -24,7 +24,7 @@ import Page.Article (articlePage)
 import Page.Home (homePage)
 import Page.LogIn (logIn)
 import Page.Profile (profilePage)
-import Routes (Routes(..), routes, toPath)
+import Routes (Routes(..), changeRoute, routes, toPath)
 import Routing (match)
 import Routing.Hash (getHash, matches, setHash)
 import Types (MyApp, User)
@@ -77,7 +77,7 @@ pageForRoute (Profile username) = profilePage username
 pageForRoute (Article slug) = articlePage slug
 pageForRoute LogIn = do
   logIn
-  homePage
+  pure (changeRoute HomePage)
 
 
 main :: Effect Unit
