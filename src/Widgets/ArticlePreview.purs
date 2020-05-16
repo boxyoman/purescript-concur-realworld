@@ -15,6 +15,7 @@ import Effect.Ref (Ref)
 import Routes (Routes, changeRoute)
 import Routes as R
 import Types (Article, MyApp, User)
+import Types.DateTimeJSON (viewDate)
 import Utils.Api (WebRequest_)
 
 
@@ -52,7 +53,7 @@ articleView article =
           , P.className "author"
           ]
           [ D.text $ unwrap article.author.username ]
-        , D.span [P.className "date"] [D.text (show article.createdAt)]
+        , viewDate article.createdAt
         ]
       , D.button
         [ P.className "btn btn-outline-primary btn-sm pull-xs-right" ]

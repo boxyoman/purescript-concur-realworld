@@ -2,7 +2,13 @@ module Types.DateTimeJSON where
 
 import Prelude
 
+import Concur.Core (class LiftWidget, Widget)
+import Concur.React (HTML)
+import Concur.React.DOM as D
+import Concur.React.Props as P
 import Control.Monad.Except.Trans (ExceptT(..))
+import Control.MultiAlternative (class MultiAlternative)
+import Control.ShiftMap (class ShiftMap)
 import Data.Bifunctor (bimap)
 import Data.DateTime (DateTime)
 import Data.Formatter.DateTime (Formatter, FormatterCommand(..), format, unformatParser)
@@ -47,10 +53,24 @@ showDate = format formatter
   where
     formatter :: Formatter
     formatter
-      = MonthTwoDigits
-      : Placeholder "/"
-      : DayOfMonthTwoDigits
-      : Placeholder "/"
+      = DayOfWeekNameShort
+      : Placeholder " "
+      : DayOfMonth
+      : Placeholder " "
+      : DayOfMonth
+      : Placeholder " "
       : YearFull
       : Nil
 
+
+viewDate
+  :: forall a m
+   . MultiAlternative m
+  => ShiftMap (Widget HTML) m
+  => LiftWidget HTML m
+  => MyDateTime
+  -> m a
+viewDate (MyDateTime datetime) =
+  D.span
+    [ P.className "date" ]
+    [ D.text (showDate datetime)]

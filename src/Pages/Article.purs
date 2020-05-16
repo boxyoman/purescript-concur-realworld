@@ -1,7 +1,6 @@
 module Page.Article where
 
 import Prelude
-
 import Api (getArticle)
 import Concur.React.DOM as D
 import Concur.React.Props as P
@@ -14,6 +13,7 @@ import Data.Variant as V
 import Effect.Ref (Ref)
 import Types (Article, MyApp, Slug, User)
 import Routes as R
+import Types.DateTimeJSON (viewDate)
 
 
 articlePage
@@ -83,9 +83,7 @@ articleMetaView article =
       [ D.a
         [P.onClick $> R.changeRoute (R.Profile article.author.username)]
         [ D.text $ unwrap article.author.username ]
-      , D.span
-        [ P.className "date" ]
-        [ D.text (show article.createdAt)]
+      , viewDate article.createdAt
       ]
     , empty -- TODO: follow and like here
     ]
