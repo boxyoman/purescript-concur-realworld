@@ -35,7 +35,9 @@ routingWidget :: forall a . Widget HTML a
 routingWidget = do
   routeRef <- liftEffect $ do
     var <- Evar.empty
-    void $ matches routes \_ route -> void $ Evar.tryPut route var
+    void $ matches routes \_ route -> do
+       log ("route change " <> show route)
+       void $ Evar.tryPut route var
     pure var
   let awaitRoute = liftAff $ Avar.take routeRef
 

@@ -45,7 +45,7 @@ isNewPost _ = false
 
 routes :: Match Routes
 routes = root *> oneOf
-  [ HomePage <$ (root *> end)
+  [ HomePage <$ (lit "" *> end)
   , Profile <$> (mkUsername <$> (lit "profile" *> str)) <* end
   , Article <$> (mkSlug <$> (lit "article" *> str)) <* end
   , LogIn <$ lit "login" <* end
