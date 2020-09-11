@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "which parcel",
-    "watch": "concurrently \"spago build --watch\" \"parcel src/index.html\" "
+    "watch": "concurrently \"spago build --watch --purs-args '-g sourcemaps'\" \"parcel src/index.html\" "
   },
   "author": "",
   "license": "ISC",

@@ -13,6 +13,7 @@ dist
 
 # Generated files
 .psci
+.psc-ide-port
 output
 generated-docs
 
