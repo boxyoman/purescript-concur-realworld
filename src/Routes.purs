@@ -18,6 +18,7 @@ data Routes
   = HomePage
   | Profile Username
   | Article Slug
+  | Settings
   | LogIn
 
 derive instance genericRoutes :: Generic Routes _
@@ -38,16 +39,20 @@ isLogIn _ = false
 
 
 isSettings :: Routes -> Boolean
+isSettings Settings = true
 isSettings _ = false
 
 isNewPost :: Routes -> Boolean
 isNewPost _ = false
+
+
 
 routes :: Match Routes
 routes = root *> oneOf
   [ HomePage <$ (lit "" *> end)
   , Profile <$> (mkUsername <$> (lit "profile" *> str)) <* end
   , Article <$> (mkSlug <$> (lit "article" *> str)) <* end
+  , Settings <$ (lit "settings" *> end)
   , LogIn <$ lit "login" <* end
   ]
 
@@ -56,6 +61,7 @@ toPath :: Routes -> String
 toPath HomePage = "/"
 toPath (Profile username) = "/profile/" <> unwrap username
 toPath (Article slug) = "/article/" <> unwrap slug
+toPath Settings = "/settings"
 toPath LogIn = "/login/"
 
 

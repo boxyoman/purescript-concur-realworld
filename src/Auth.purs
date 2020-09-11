@@ -37,6 +37,15 @@ login loginData = do
     }
     rdUser
 
+updateUserRef
+  :: forall m r
+   . MonadAff m
+  => MonadReader {user :: Ref (Maybe User) | r} m
+  => User
+  -> m Unit
+updateUserRef user = do
+  userRef <- asks _.user
+  liftEffect $ Ref.write (Just user) userRef
 
 setupUserRef
   :: forall m

@@ -2,16 +2,14 @@ module Api where
 
 import Prelude
 
-import Control.Monad.Reader (class MonadReader, asks)
+import Control.Monad.Reader (class MonadReader)
 import Data.Maybe (Maybe)
 import Data.Newtype (unwrap)
 import Effect.Aff.Class (class MonadAff)
-import Effect.Class (liftEffect)
 import Effect.Ref (Ref)
-import Effect.Ref as Ref
 import Milkis as M
-import Types (Article, Author, Slug, Tag, Username, User)
-import Utils.Api (WebRequest_, fetch, get, post, readAsJSON')
+import Types (Article, Author, Comment, Slug, Tag, User, Username, UpdateProfile)
+import Utils.Api (WebRequest_, fetch, get, post, put, readAsJSON')
 
 rootUrl :: String
 rootUrl = "https://conduit.productionready.io/api"
@@ -61,11 +59,16 @@ getProfile
   => Username
   -> m (WebRequest_ ({profile :: Author}))
 getProfile username = do
-  user <- asks (_.user) >>= (liftEffect <<< Ref.read)
-  let mtoken = map _.token user
-
   readAsJSON' <$> get (M.URL (rootUrl <> "/profiles/" <> unwrap username))
 
+updateProfile
+  :: forall m r
+   . MonadAff m
+  => MonadReader {user :: Ref (Maybe User) | r} m
+  => UpdateProfile
+  -> m (WebRequest_ ({user :: User}))
+updateProfile update =
+  readAsJSON' <$> put (M.URL (rootUrl <> "/user")) update
 
 getArticlesBy
   :: forall m r
@@ -109,3 +112,13 @@ getUser token = do
                  , credentials : M.includeCredentials
                  }
   readAsJSON' <$> fetch (M.URL (rootUrl <> "/user")) options'
+
+
+getCommentsForArticle
+  :: forall m r
+   . MonadAff m
+  => MonadReader {user :: Ref (Maybe User) | r} m
+  => Slug
+  -> m (WebRequest_ ({comments :: Array Comment}))
+getCommentsForArticle slug = do
+  readAsJSON' <$> get (M.URL (rootUrl <> "/articles/" <> unwrap slug <> "/comments"))

@@ -22,6 +22,7 @@ import Effect.Class.Console (log)
 import Effect.Ref (Ref)
 import Page.Article (articlePage)
 import Page.Home (homePage)
+import Page.Settings (settingsPage)
 import Page.LogIn (logIn)
 import Page.Profile (profilePage)
 import Routes (Routes(..), changeRoute, routes, toPath)
@@ -75,6 +76,7 @@ pageForRoute
    . Routes
   -> MyApp {user :: Ref (Maybe User) | r} (Variant (changeRoute :: Routes | v))
 pageForRoute HomePage = homePage
+pageForRoute Settings = settingsPage
 pageForRoute (Profile username) = profilePage username
 pageForRoute (Article slug) = articlePage slug
 pageForRoute LogIn = do

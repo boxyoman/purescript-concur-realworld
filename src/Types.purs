@@ -4,12 +4,16 @@ module Types
   , mkUsername
   , User
   , Author
+  , UpdateProfile
   , Slug'
   , Slug
   , mkSlug
   , Title'
   , Title
   , Article
+  , CommentId'
+  , CommentId
+  , Comment
   , Tag'
   , Tag
   , MyApp
@@ -45,6 +49,15 @@ type Author =
   , following :: Boolean
   }
 
+type UpdateProfile =
+  { username ::  Maybe Username
+  , email :: Maybe String
+  , bio :: Maybe String
+  , image :: Maybe String
+  , password :: Maybe String
+  }
+
+
 data Slug'
 type Slug = Wrapped Slug' String
 
@@ -71,6 +84,19 @@ type Article =
 
 data Tag'
 type Tag = Wrapped Tag' String
+
+
+data CommentId'
+type CommentId = Wrapped CommentId' Int
+
+type Comment =
+  { id :: CommentId
+  , createdAt :: MyDateTime
+  , updatedAt :: MyDateTime
+  , body :: String
+  , author :: Author
+  }
+
 
 
 type MyApp r = ReaderT r (Widget HTML)

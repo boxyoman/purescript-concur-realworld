@@ -69,6 +69,7 @@ signupButton page = do
           ]
         ]
 
+
 signinButton
   :: forall v r
    . Routes
@@ -91,9 +92,9 @@ signinButton page = do
 
 
 settingsButton
-  :: forall a  r
+  :: forall v r
    . Routes
-  -> MyApp { user :: Ref (Maybe User) | r} a
+  -> MyApp { user :: Ref (Maybe User) | r} (Variant (changeRoute :: Routes | v))
 settingsButton page = do
   muser <- asks (_.user) >>= (liftEffect <<< Ref.read)
   if isJust muser
@@ -102,7 +103,7 @@ settingsButton page = do
         [ P.className "nav-item" ]
         [ D.a
           [ P.className ("nav-link" <> activeRoute page R.isSettings)
-          , P.href "#/settings"
+          , P.onClick $> (R.changeRoute R.Settings)
           ]
           [ D.i
             [ P.className "ion-gear-a" ]
