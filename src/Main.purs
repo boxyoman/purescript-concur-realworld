@@ -9,7 +9,7 @@ import Concur.React.Run (runWidgetInDom)
 import Control.Alt ((<|>))
 import Control.Monad.Reader.Trans (runReaderT)
 import Data.Either (either)
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.Variant (Variant)
 import Data.Variant as V
 import Effect (Effect)
@@ -25,6 +25,7 @@ import Page.Home (homePage)
 import Page.Settings (settingsPage)
 import Page.LogIn (logIn)
 import Page.Profile (profilePage)
+import Page.NewArticle (newArticlePage)
 import Routes (Routes(..), changeRoute, routes, toPath)
 import Routing (match)
 import Routing.Hash (getHash, matches, setHash)
@@ -82,6 +83,8 @@ pageForRoute (Article slug) = articlePage slug
 pageForRoute LogIn = do
   logIn
   pure (changeRoute HomePage)
+pageForRoute NewArticle = newArticlePage Nothing
+pageForRoute (EditArticle slug) = newArticlePage (Just slug)
 
 
 main :: Effect Unit

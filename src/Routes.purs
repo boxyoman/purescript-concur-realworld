@@ -20,6 +20,8 @@ data Routes
   | Article Slug
   | Settings
   | LogIn
+  | EditArticle Slug
+  | NewArticle
 
 derive instance genericRoutes :: Generic Routes _
 instance showRoutes :: Show Routes where
@@ -54,6 +56,8 @@ routes = root *> oneOf
   , Article <$> (mkSlug <$> (lit "article" *> str)) <* end
   , Settings <$ (lit "settings" *> end)
   , LogIn <$ lit "login" <* end
+  , EditArticle <$> (mkSlug <$> (lit "editor" *> str)) <* end
+  , NewArticle <$ lit "editor" <* end
   ]
 
 
@@ -63,6 +67,8 @@ toPath (Profile username) = "/profile/" <> unwrap username
 toPath (Article slug) = "/article/" <> unwrap slug
 toPath Settings = "/settings"
 toPath LogIn = "/login/"
+toPath (EditArticle slug) = "/editor/" <> unwrap slug
+toPath NewArticle = "/editor/"
 
 
 changeRoute :: forall v . Routes -> Variant (changeRoute :: Routes | v)

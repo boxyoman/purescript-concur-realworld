@@ -10,6 +10,8 @@ module Types
   , mkSlug
   , Title'
   , Title
+  , mkTitle
+  , CreateArticle
   , Article
   , CommentId'
   , CommentId
@@ -68,6 +70,9 @@ mkSlug = Wrapped
 data Title'
 type Title = Wrapped Title' String
 
+mkTitle :: String -> Title
+mkTitle = Wrapped
+
 type Article =
   { slug :: Slug
   , title :: Title
@@ -78,6 +83,14 @@ type Article =
   , favorited :: Boolean
   , favoritesCount :: Int
   , author :: Author
+  , tagList :: Array Tag
+  }
+
+
+type CreateArticle =
+  { title :: Title
+  , description :: String -- too lazy to newtype this
+  , body :: String
   , tagList :: Array Tag
   }
 

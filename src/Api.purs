@@ -8,7 +8,17 @@ import Data.Newtype (unwrap)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Ref (Ref)
 import Milkis as M
-import Types (Article, Author, Comment, Slug, Tag, User, Username, UpdateProfile)
+import Types
+  ( Article
+  , Author
+  , Comment
+  , Slug
+  , Tag
+  , User
+  , Username
+  , UpdateProfile
+  , CreateArticle
+  )
 import Utils.Api (WebRequest_, fetch, get, post, put, readAsJSON')
 
 rootUrl :: String
@@ -122,3 +132,13 @@ getCommentsForArticle
   -> m (WebRequest_ ({comments :: Array Comment}))
 getCommentsForArticle slug = do
   readAsJSON' <$> get (M.URL (rootUrl <> "/articles/" <> unwrap slug <> "/comments"))
+
+
+createArticle
+  :: forall m r
+   . MonadAff m
+  => MonadReader {user :: Ref (Maybe User) | r} m
+  => CreateArticle
+  -> m (WebRequest_ ({article :: Article }))
+createArticle cr =
+  readAsJSON' <$> post (M.URL (rootUrl <> "/users/login")) {article: cr}

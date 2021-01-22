@@ -79,8 +79,6 @@ logIn = loopState {msg: [], email: "", pass: ""} \s -> do
             ]
           ]
         ]
-      , D.text s.email
-      , D.text s.pass
       ]
   email <- liftEffect (RRef.getCurrentRef refEmail) <#> (maybe s.email (_.value <<< unsafeCoerce))
   password <- liftEffect (RRef.getCurrentRef refPassword) <#> (maybe s.pass (_.value <<< unsafeCoerce))
